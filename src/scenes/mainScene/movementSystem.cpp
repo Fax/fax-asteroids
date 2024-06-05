@@ -8,7 +8,7 @@ namespace Scenes
 {
     void movementSystem(entt::registry &registry)
     {
-        auto view = registry.view<PlayerComponent, TransformComponent, VelocityComponent>();
+        auto view = registry.view<TransformComponent, VelocityComponent>();
 
         for (auto entity : view)
         {

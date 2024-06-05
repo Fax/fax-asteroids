@@ -1,5 +1,18 @@
 #pragma once
 #include <raylib.h>
+enum class BulletType {
+    Circle,
+    Square,
+    // Add more shapes as needed
+};
+
+struct BulletComponent {
+    BulletType type;
+};
+struct TimeoutComponent{
+    float timeout;
+    float current;
+};
 
 enum class ShapeType {
     Triangle,
@@ -28,10 +41,15 @@ struct VelocityComponent {
 struct ColliderComponent {
     float radius;
 };
+struct CameraComponent {
+    Camera2D camera;
+    bool isActive = false;
+};
 
 struct RenderComponent {
     Color color;
     ShapeType shape;
+    float size = 10;
 };
 
 struct PlayerComponent {
@@ -51,9 +69,7 @@ struct AsteroidComponent {
     int size;
 };
 
-struct BulletComponent {
-    float lifespan;
-};
+
 
 struct SpriteComponent {
     Texture2D texture; // should I store the pointer only?

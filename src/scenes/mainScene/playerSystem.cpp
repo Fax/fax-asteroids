@@ -15,8 +15,8 @@ namespace Scenes
         {
             auto &player = view.get<PlayerComponent>(entity);
             auto &transform = view.get<TransformComponent>(entity);
-            auto &velocity = view.get<VelocityComponent>(entity);
             auto &input = view.get<InputComponent>(entity);
+            auto &velocity = view.get<VelocityComponent>(entity);
 
             if (!player.isAlive)
             {
@@ -48,7 +48,7 @@ namespace Scenes
             }
             if (input.shoot)
             {
-                velocity.velocity = {0, 0};
+                // can we shoot?
             }
             if (!input.up && !input.down)
             {

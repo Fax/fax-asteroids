@@ -63,7 +63,7 @@ set(COMMON_SOURCES
 
 file(GLOB CORE_SOURCES ${CMAKE_SOURCE_DIR}/src/core/*.cpp)
 # recursively, include everything in scenes
-file(GLOB_RECURSE SCENES_SOURCES ${CMAKE_SOURCE_DIR}/src/scenes/*.cpp)
+file(GLOB_RECURSE  SCENES_SOURCES CONFIGURE_DEPENDS ${CMAKE_SOURCE_DIR}/src/scenes/*.cpp)
 
 # Add executable
 add_executable(${PROJECT_NAME} ${COMMON_SOURCES} ${CORE_SOURCES} ${SCENES_SOURCES} ${PLATFORM_SOURCES})
