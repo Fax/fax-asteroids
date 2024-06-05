@@ -2,6 +2,13 @@ cmake_minimum_required(VERSION 3.10)
 set(PROJECT_NAME fax-asteroids)
 project(${PROJECT_NAME})
 option(BUILD_SHARED_LIBS "Build using shared libraries" ON)
+
+include_directories(${CMAKE_SOURCE_DIR}/deps) 
+include_directories(${CMAKE_SOURCE_DIR}/include)
+include_directories(${CMAKE_SOURCE_DIR}/src/core)
+include_directories(${CMAKE_SOURCE_DIR}/src/scenes)
+include_directories(${CMAKE_SOURCE_DIR}/src/components)
+
 if(EMSCRIPTEN)
 	set(CMAKE_BUILD_TYPE "Emscripten")
     set(PLATFORM Web)
@@ -23,7 +30,7 @@ else()
 
 endif()
 # Common include directories
-include_directories(${CMAKE_SOURCE_DIR}/include)
+
 
 # Add platform-specific settings
 if(WIN32)
@@ -33,15 +40,7 @@ if(WIN32)
     # Add platform-specific source files
     file(GLOB PLATFORM_SOURCES ${CMAKE_SOURCE_DIR}/platforms/windows/src/*.cpp)
 
-    
-# elseif(ANDROID)
-#     include_directories(${CMAKE_SOURCE_DIR}/platforms/android/include)
-#     link_directories(${CMAKE_SOURCE_DIR}/platforms/android/lib)
-#     add_definitions(-DPLATFORM_ANDROID)
-#     # Add platform-specific source files
-#     set(PLATFORM_SOURCES
-#         ${CMAKE_SOURCE_DIR}/platforms/android/src/*.cpp
-#     )
+
 elseif(EMSCRIPTEN)
     include_directories(${CMAKE_SOURCE_DIR}/platforms/wasm/include)
     link_directories(${CMAKE_SOURCE_DIR}/platforms/wasm/lib)
@@ -62,18 +61,13 @@ set(COMMON_SOURCES
     # ${CMAKE_SOURCE_DIR}/src/common_source.cpp
 )
 
+file(GLOB CORE_SOURCES ${CMAKE_SOURCE_DIR}/src/core/*.cpp)
+# recursively, include everything in scenes
+file(GLOB_RECURSE SCENES_SOURCES ${CMAKE_SOURCE_DIR}/src/scenes/*.cpp)
+
 # Add executable
-add_executable(${PROJECT_NAME} ${COMMON_SOURCES} ${PLATFORM_SOURCES})
+add_executable(${PROJECT_NAME} ${COMMON_SOURCES} ${CORE_SOURCES} ${SCENES_SOURCES} ${PLATFORM_SOURCES})
 
-# Link libraries
-# if(WIN32)
-# #I need to add it manually because it doesn't add it automatically. 
-# #but it adds gdi32 and it doesn't make sense.
-# target_link_libraries(${PROJECT_NAME} raylib winmm) 
-# else()
-# target_link_libraries(${PROJECT_NAME} raylib)
-
-# endif()
 
 if(EMSCRIPTEN)
     target_link_libraries(${PROJECT_NAME} raylib)
