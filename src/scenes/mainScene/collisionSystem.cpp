@@ -16,6 +16,25 @@ namespace Scenes
     void splitOrRemoveAsteroid(entt::entity asteroid, entt::registry &registry)
     {
         // Implement logic to split asteroid into smaller pieces or remove
+        // create a particle emitter with a timeout so it will disappear
+        auto &asteroidTransform = registry.get<TransformComponent>(asteroid);
+
+        auto emitterEntity = registry.create();
+        auto &emitterComponent = registry.emplace<ParticleEmitterComponent>(emitterEntity);
+        emitterComponent.position = Vector2{0, 0};
+        emitterComponent.direction = Vector2{0, 0};
+        emitterComponent.isActive = true;
+        emitterComponent.randomness = 1.0F;
+        emitterComponent.speed = 2.0F;
+        emitterComponent.lifetimeEmittedParticles = .6F;
+        emitterComponent.definition = ParticleDefinition {
+            ParticleType::Basic,
+            WHITE,
+            ""
+        };
+
+        registry.emplace<TransformComponent>(emitterEntity, asteroidTransform.position, 0.0F);
+        registry.emplace<TimeoutComponent>(emitterEntity, 0.3f);
         registry.destroy(asteroid); // Example removal
     }
 

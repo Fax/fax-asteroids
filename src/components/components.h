@@ -4,15 +4,30 @@
 struct ParticleComponent {
     Vector2 position;
     Vector2 velocity;
-    float lifetime;
+    Color color = RED;
 };
-
+struct ParticleSpriteComponent {
+    Vector2 position;
+    Vector2 velocity;
+    std::string spriteAlias;
+};
+enum class ParticleType{
+    Basic,
+    Sprite
+};
+struct ParticleDefinition{
+    ParticleType type = ParticleType::Basic;
+    Color color = RED;
+    std::string spriteAlias;
+};
 struct ParticleEmitterComponent{
     Vector2 position;
     Vector2 direction;
     bool isActive = false;
     float randomness = 0.0F;
     float speed = 5.0F;
+    float lifetimeEmittedParticles = 1.0F;
+    ParticleDefinition definition;
 };
 
 enum class BulletType {

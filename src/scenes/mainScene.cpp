@@ -26,11 +26,18 @@ namespace Scenes
                 Vector2 spawnPoint = Vector2Add(transform.position, emitter.position);
 
                 Vector2 randomDirection = {
-                    emitter.direction.x + (GetRandomValue(-100, 100) / 100.0f) * emitter.randomness,
-                    emitter.direction.y + (GetRandomValue(-100, 100) / 100.0f) * emitter.randomness};
+                    (emitter.direction.x + (GetRandomValue(-100, 100) / 100.0f) * emitter.randomness) * emitter.speed,
+                    (emitter.direction.y + (GetRandomValue(-100, 100) / 100.0f) * emitter.randomness) * emitter.speed};
                 // 1 second lifetime
-                registry.emplace<ParticleComponent>(entity, spawnPoint, Vector2Normalize(randomDirection), .5F);
-                registry.emplace<TimeoutComponent>(entity, .5F); // use the timeout component to get rid of the particle!
+                switch (emitter.definition.type)
+                {
+                case ParticleType::Basic:
+                    registry.emplace<ParticleComponent>(entity, spawnPoint, Vector2Normalize(randomDirection), emitter.definition.color);
+                case ParticleType::Sprite:
+                    registry.emplace<ParticleSpriteComponent>(entity, spawnPoint,
+                                                              Vector2Normalize(randomDirection), emitter.definition.spriteAlias);
+                }
+                registry.emplace<TimeoutComponent>(entity, emitter.lifetimeEmittedParticles); // use the timeout component to get rid of the particle!
             }
         }
     }
@@ -52,8 +59,7 @@ namespace Scenes
         for (auto entity : view)
         {
             auto &particle = view.get<ParticleComponent>(entity);
-            DrawCircleV(particle.position, 2, RED);
-            DrawLineV(particle.position, Vector2Add(particle.position, particle.velocity), GREEN);
+            DrawCircleV(particle.position, 2, particle.color);
         }
     }
 
@@ -64,7 +70,7 @@ namespace Scenes
         registry.emplace<VelocityComponent>(entity, Vector2{0, 0}, 0.0f);        // Initial velocity and rotation speed
         registry.emplace<ColliderComponent>(entity, 20.0f);                      // Collider radius
         registry.emplace<RenderComponent>(entity, BLACK, ShapeType::Square);     // Render color
-        registry.emplace<ParticleEmitterComponent>(entity, Vector2{0, 0}, Vector2{0, 10}, false, 0.8F, 5.0F);
+        registry.emplace<ParticleEmitterComponent>(entity, Vector2{0, 0}, Vector2{0, 10}, false, 0.8F, 5.0F, .8F);
         registry.emplace<PlayerComponent>(entity, true, 3);                          // Player is alive with 3 lives
         registry.emplace<InputComponent>(entity, false, false, false, false, false); // Initial input state
     }

@@ -33,9 +33,6 @@ namespace Scenes
             {
                 e->isActive = input.up;
                 e->direction = Vector2Backward(transform.getForward());
-                
-                printf_s("emitter x:%0.2f y:%0.2f\ndirection x:%0.2f y:%0.2f\n",e->direction.x,e->direction.y,transform.getForward().x,transform.getForward().y);
-
             }
             if (input.up)
             {
@@ -44,7 +41,7 @@ namespace Scenes
             }
             if (input.down) // it decelerates the CURRENT velocity vector, not facing direction
             {
-                Vector2 bw = {velocity.velocity.x * -1, velocity.velocity.y * -1};
+                Vector2 bw = Vector2Backward(velocity.velocity);
                 velocity.velocity.x += bw.x * dt * 2;
                 velocity.velocity.y += bw.y * dt * 2;
             }
