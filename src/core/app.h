@@ -2,6 +2,7 @@
 #include "appConfig.h"
 #include <memory>
 #include "sceneManager.h"
+#include "assetManager.h"
 namespace Core
 {
 
@@ -9,11 +10,14 @@ namespace Core
     {
     private:
         static App *s_instance;
-        SceneManager* m_sceneManager; // only one pointer to it. does it make sense? I didn't do it with the config 
+        SceneManager *m_sceneManager; // only one pointer to it. does it make sense? I didn't do it with the config
+        AssetManager *m_assetManager;
 
     public:
-        static App &GetInstance(); // the app getter is static
+        static App &GetInstance();       // the app getter is static
         SceneManager &GetSceneManager(); // but the scene manager is part of the app
+        
+        AssetManager &GetAssetManager(); // asset manager
 
     private:
         // this member will always be valid until the app dies

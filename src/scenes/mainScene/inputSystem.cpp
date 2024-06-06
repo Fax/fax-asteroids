@@ -18,6 +18,8 @@ namespace Scenes
             input.left = IsKeyDown(KEY_A);
             input.right = IsKeyDown(KEY_D);
             input.shoot = IsKeyPressed(KEY_SPACE);
+            input.scrollUp = GetMouseWheelMove() > 0;
+            input.scrollDown = GetMouseWheelMove() < 0;
         }
     }
 

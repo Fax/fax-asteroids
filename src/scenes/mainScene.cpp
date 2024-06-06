@@ -5,15 +5,66 @@
 #include "components.h"
 #include "entt/entt.hpp"
 #include "app.h"
+
 namespace Scenes
 {
+    entt::registry registry;
+    MainScene::MainScene() {}
+    void particleEmitSystem(entt::registry &registry)
+    {
+        auto view = registry.view<ParticleEmitterComponent, TransformComponent>();
+        for (auto entity : view)
+        {
+            auto &emitter = view.get<ParticleEmitterComponent>(entity);
+            auto &transform = view.get<TransformComponent>(entity);
+            if (emitter.isActive)
+            {
+                // TODO: maybe I should use a different registry, only for the particles
+                // spawn particle
+                auto entity = registry.create();
+                // spawn point
+                Vector2 spawnPoint = Vector2Add(transform.position, emitter.position);
+
+                Vector2 randomDirection = {
+                    emitter.direction.x + (GetRandomValue(-100, 100) / 100.0f) * emitter.randomness,
+                    emitter.direction.y + (GetRandomValue(-100, 100) / 100.0f) * emitter.randomness};
+                // 1 second lifetime
+                registry.emplace<ParticleComponent>(entity, spawnPoint, Vector2Normalize(randomDirection), .5F);
+                registry.emplace<TimeoutComponent>(entity, .5F); // use the timeout component to get rid of the particle!
+            }
+        }
+    }
+
+    void particleUpdateSystem(entt::registry &registry)
+    {
+        auto view = registry.view<ParticleComponent>();
+        for (auto entity : view)
+        {
+            auto &particle = view.get<ParticleComponent>(entity);
+            particle.position.x += particle.velocity.x * 50 * GetFrameTime();
+            particle.position.y += particle.velocity.y * 50 * GetFrameTime();
+        }
+    }
+
+    void renderParticleSystem(entt::registry &registry)
+    {
+        auto view = registry.view<ParticleComponent>();
+        for (auto entity : view)
+        {
+            auto &particle = view.get<ParticleComponent>(entity);
+            DrawCircleV(particle.position, 2, RED);
+            DrawLineV(particle.position, Vector2Add(particle.position, particle.velocity), GREEN);
+        }
+    }
+
     void createPlayer(entt::registry &registry)
     {
         auto entity = registry.create();
-        registry.emplace<TransformComponent>(entity, Vector2{400, 300}, -90.0f);     // Starting position and rotation
-        registry.emplace<VelocityComponent>(entity, Vector2{0, 0}, 0.0f);            // Initial velocity and rotation speed
-        registry.emplace<ColliderComponent>(entity, 20.0f);                          // Collider radius
-        registry.emplace<RenderComponent>(entity, BLACK, ShapeType::Square);         // Render color
+        registry.emplace<TransformComponent>(entity, Vector2{400, 300}, -90.0f); // Starting position and rotation
+        registry.emplace<VelocityComponent>(entity, Vector2{0, 0}, 0.0f);        // Initial velocity and rotation speed
+        registry.emplace<ColliderComponent>(entity, 20.0f);                      // Collider radius
+        registry.emplace<RenderComponent>(entity, BLACK, ShapeType::Square);     // Render color
+        registry.emplace<ParticleEmitterComponent>(entity, Vector2{0, 0}, Vector2{0, 10}, false, 0.8F, 5.0F);
         registry.emplace<PlayerComponent>(entity, true, 3);                          // Player is alive with 3 lives
         registry.emplace<InputComponent>(entity, false, false, false, false, false); // Initial input state
     }
@@ -23,7 +74,7 @@ namespace Scenes
         auto entity = registry.create();
         Camera2D camera;
         camera.zoom = 1;
-        camera.offset = {config.Width/2, config.Height/2};
+        camera.offset = {config.Width / 2, config.Height / 2};
         camera.target = {400, 300};
         camera.rotation = 0;
         registry.emplace<CameraComponent>(entity, camera, true);
@@ -37,74 +88,7 @@ namespace Scenes
         registry.emplace<RenderComponent>(entity, BLUE, ShapeType::Circle);
         registry.emplace<AsteroidComponent>(entity, 3); // Example size
     }
-    void createBullet(entt::registry &registry, Vector2 position, Vector2 velocity, BulletType type)
-    {
-        auto entity = registry.create();
-        registry.emplace<TransformComponent>(entity, position, 0.0f);
-        registry.emplace<VelocityComponent>(entity, velocity, 0.0f); // the velocity vector is defined by the forward of the shooter
-        registry.emplace<ColliderComponent>(entity, 5.0f);
-        registry.emplace<TimeoutComponent>(entity, 5.0f, 0.0f);
-        switch (type)
-        {
-        case BulletType::Square:
-            /* code */
-            registry.emplace<RenderComponent>(entity, RED, ShapeType::Square, 2.0f);
-            break;
-        case BulletType::Circle:
-            /* code */
-            registry.emplace<RenderComponent>(entity, WHITE, ShapeType::Circle, 2.0f);
-            break;
-        default:
-            registry.emplace<RenderComponent>(entity, BLUE, ShapeType::Circle, 2.0f);
-            break;
-        }
-        registry.emplace<BulletComponent>(entity, type); // Example size
-    }
-    void shootSystem(entt::registry &registry)
-    {
-        auto view = registry.view<InputComponent, TransformComponent, VelocityComponent>();
-        for (auto entity : view)
-        {
-            auto &transform = view.get<TransformComponent>(entity);
-            auto &input = view.get<InputComponent>(entity);
-            auto &velocity = view.get<VelocityComponent>(entity);
-            if (input.shoot)
-            {
 
-                Vector2 fw = transform.getForward();
-                float bulletSpeed = 200;
-                createBullet(registry, Vector2Add(transform.position, fw), Vector2Add(velocity.velocity, Vector2Multiply({bulletSpeed, bulletSpeed}, Vector2Normalize(fw))), BulletType::Circle);
-            }
-        }
-    }
-    void timeoutSystem(entt::registry &registry)
-    {
-        auto view = registry.view<TimeoutComponent>();
-        for (auto entity : view)
-        {
-            auto &timeout = view.get<TimeoutComponent>(entity);
-            timeout.current += GetFrameTime();
-            if (timeout.current > timeout.timeout)
-            {
-                registry.destroy(entity);
-            }
-        }
-    }
-    void renderHUD(entt::registry &registry)
-    {
-        auto view = registry.view<PlayerComponent, TransformComponent, VelocityComponent>();
-        for (auto entity : view)
-        {
-            auto &player = view.get<PlayerComponent>(entity);
-            auto &transform = view.get<TransformComponent>(entity);
-            auto &velocity = view.get<VelocityComponent>(entity);
-            DrawText(TextFormat("Angle: %0.2f", transform.rotation), 20, 20, 10, BLACK);
-            DrawText(TextFormat("Position: x:%0.2f y:%0.2f", transform.position.x, transform.position.y), 20, 30, 10, BLACK);
-            DrawText(TextFormat("Speed: x:%0.2f y:%0.2f", velocity.velocity.x, velocity.velocity.y), 20, 40, 10, BLACK);
-            DrawText(TextFormat("Lives: %i", player.lives), 20, 50, 10, BLACK);
-            DrawText(TextFormat("Dt: %0.2f", GetFrameTime()), 20, 60, 10, BLACK);
-        }
-    }
     void renderDebugPlayer(entt::registry &registry)
     {
         auto view = registry.view<PlayerComponent, TransformComponent, VelocityComponent>();
@@ -118,56 +102,7 @@ namespace Scenes
             DrawLine(transform.position.x, transform.position.y, transform.position.x + transform.getForward().x * 20, transform.position.y + transform.getForward().y * 20, RED);
         }
     }
-    void cameraSystem(entt::registry &registry)
-    {
-        auto view = registry.view<CameraComponent>();
-        auto playerView = registry.view<PlayerComponent, TransformComponent>();
-        for (auto entity : view)
-        {
-            auto &camera = view.get<CameraComponent>(entity);
-            if (camera.isActive)
-            {
-                const auto &entity = playerView.back();
-                if (entity != entt::null)
-                {
-                    auto &transform = playerView.get<TransformComponent>(entity);
-                    camera.camera.target = Vector2Lerp(camera.camera.target, transform.position, .1);
-                }
-            }
-        }
-    }
-    void renderSystem(entt::registry &registry)
-    {
-        auto view = registry.view<TransformComponent, RenderComponent>();
 
-        for (auto entity : view)
-        {
-            auto &transform = view.get<TransformComponent>(entity);
-            auto &render = view.get<RenderComponent>(entity);
-
-            switch (render.shape)
-            {
-            case ShapeType::Triangle:
-            {
-                break;
-            }
-            case ShapeType::Square:
-            {
-                // DrawRectangleV(transform.position, {20, 20}, render.color);
-                DrawRectanglePro({transform.position.x, transform.position.y, render.size, render.size}, {render.size / 2, render.size / 2}, transform.rotation, render.color);
-                break;
-            }
-            case ShapeType::Circle:
-            {
-                DrawCircle(transform.position.x, transform.position.y, render.size, render.color);
-                break;
-            }
-                // Add more shape cases as needed
-            }
-        }
-    }
-    entt::registry registry;
-    MainScene::MainScene() {}
     void MainScene::Load()
     {
 
@@ -187,29 +122,8 @@ namespace Scenes
         timeoutSystem(registry);
         cameraSystem(registry);
         collisionSystem(registry);
-    }
-
-    void beginCameraSystem(entt::registry &registry)
-    {
-        auto view = registry.view<CameraComponent>();
-        for (auto entity : view)
-        {
-            auto &camera = view.get<CameraComponent>(entity);
-            if (camera.isActive)
-                BeginMode2D(camera.camera);
-        }
-    }
-
-    // only to close the camera IF a camera is actually on the scene
-    void endCameraSystem(entt::registry &registry)
-    {
-        auto view = registry.view<CameraComponent>();
-        for (auto entity : view)
-        {
-            auto &camera = view.get<CameraComponent>(entity);
-            if (camera.isActive)
-                EndMode2D();
-        }
+        particleEmitSystem(registry);
+        particleUpdateSystem(registry);
     }
 
     void MainScene::Draw()
@@ -217,12 +131,16 @@ namespace Scenes
         auto config = Core::App::GetInstance().GetConfig();
         BeginDrawing();
         ClearBackground({0xde, 0xe4, 0xe7, 0xff});
+        // draw background without entities :)
+
+        Texture2D bg = Core::App::GetInstance().GetAssetManager().getTexture("default_background");
+        DrawTextureV(bg, {0, 0}, WHITE);
         beginCameraSystem(registry);
         renderSystem(registry);
-        
-        DrawRectangleLines(0,0,config.Width,  config.Height, BLACK);
-        DrawRectangleLines(+5,+5,config.Width-10,  config.Height-10, BLACK);
 
+        DrawRectangleLines(0, 0, config.Width, config.Height, BLACK);
+        DrawRectangleLines(+5, +5, config.Width - 10, config.Height - 10, BLACK);
+        renderParticleSystem(registry);
         renderDebugPlayer(registry);
         endCameraSystem(registry);
         renderHUD(registry);

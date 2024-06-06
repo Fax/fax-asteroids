@@ -1,4 +1,5 @@
 #include "entt/entt.hpp"
+#include "coremath.h"
 #include "raylib.h"
 #include "raymath.h"
 #include "mainSceneSystems.h"
@@ -27,6 +28,15 @@ namespace Scenes
             }
 
             // Apply input to player movement and rotation
+            auto *e = registry.try_get<ParticleEmitterComponent>(entity);
+            if (e != nullptr)
+            {
+                e->isActive = input.up;
+                e->direction = Vector2Backward(transform.getForward());
+                
+                printf_s("emitter x:%0.2f y:%0.2f\ndirection x:%0.2f y:%0.2f\n",e->direction.x,e->direction.y,transform.getForward().x,transform.getForward().y);
+
+            }
             if (input.up)
             {
                 velocity.velocity.x += transform.getForward().x * dt * 50;
@@ -35,8 +45,8 @@ namespace Scenes
             if (input.down) // it decelerates the CURRENT velocity vector, not facing direction
             {
                 Vector2 bw = {velocity.velocity.x * -1, velocity.velocity.y * -1};
-                velocity.velocity.x += bw.x * dt *2;
-                velocity.velocity.y += bw.y * dt *2;
+                velocity.velocity.x += bw.x * dt * 2;
+                velocity.velocity.y += bw.y * dt * 2;
             }
             if (input.left)
             {

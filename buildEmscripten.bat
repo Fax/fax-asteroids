@@ -1,3 +1,4 @@
+@echo off
 echo "Creating webbuild folder"
 mkdir webbuild
 echo "going to webbuild folder"

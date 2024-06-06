@@ -1,5 +1,20 @@
 #pragma once
 #include <raylib.h>
+
+struct ParticleComponent {
+    Vector2 position;
+    Vector2 velocity;
+    float lifetime;
+};
+
+struct ParticleEmitterComponent{
+    Vector2 position;
+    Vector2 direction;
+    bool isActive = false;
+    float randomness = 0.0F;
+    float speed = 5.0F;
+};
+
 enum class BulletType {
     Circle,
     Square,
@@ -63,6 +78,8 @@ struct InputComponent {
     bool left;
     bool right;
     bool shoot;
+    bool scrollUp;
+    bool scrollDown;
 };
 
 struct AsteroidComponent {

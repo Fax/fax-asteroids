@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.10)
 set(PROJECT_NAME fax-asteroids)
 project(${PROJECT_NAME})
-option(BUILD_SHARED_LIBS "Build using shared libraries" ON)
+option(BUILD_SHARED_LIBS "Build using shared libraries" OFF)
 
 include_directories(${CMAKE_SOURCE_DIR}/deps) 
 include_directories(${CMAKE_SOURCE_DIR}/include)
