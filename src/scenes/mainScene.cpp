@@ -3,13 +3,16 @@
 #include "raylib.h"
 #include "raymath.h"
 #include "components.h"
+#include "assetManager.h"
 #include "entt/entt.hpp"
 #include "app.h"
 
 namespace Scenes
 {
     entt::registry registry;
-    MainScene::MainScene() {}
+    MainScene::MainScene()
+    {
+    }
     void particleEmitSystem(entt::registry &registry)
     {
         auto view = registry.view<ParticleEmitterComponent, TransformComponent>();
@@ -45,9 +48,17 @@ namespace Scenes
     void particleUpdateSystem(entt::registry &registry)
     {
         auto view = registry.view<ParticleComponent>();
+        auto view2 = registry.view<ParticleSpriteComponent>();
+        
         for (auto entity : view)
         {
             auto &particle = view.get<ParticleComponent>(entity);
+            particle.position.x += particle.velocity.x * 50 * GetFrameTime();
+            particle.position.y += particle.velocity.y * 50 * GetFrameTime();
+        }
+        for (auto entity : view2)
+        {
+            auto &particle = view2.get<ParticleSpriteComponent>(entity);
             particle.position.x += particle.velocity.x * 50 * GetFrameTime();
             particle.position.y += particle.velocity.y * 50 * GetFrameTime();
         }
@@ -61,6 +72,16 @@ namespace Scenes
             auto &particle = view.get<ParticleComponent>(entity);
             DrawCircleV(particle.position, 2, particle.color);
         }
+
+        auto viewSpriteParticles = registry.view<ParticleSpriteComponent>();
+        for (auto entity : viewSpriteParticles)
+        {
+            auto &particle = viewSpriteParticles.get<ParticleSpriteComponent>(entity);
+
+            Texture2D particleTexture = Core::App::GetInstance().GetAssetManager().getTexture(particle.spriteAlias);
+            Vector2 origin = {5.0f, 5.0f};
+            DrawTexturePro(particleTexture, {0, 0, (float)particleTexture.width, (float)particleTexture.height}, {particle.position.x, particle.position.y, 10, 10}, origin, 0, WHITE);
+        }
     }
 
     void createPlayer(entt::registry &registry)
@@ -70,7 +91,9 @@ namespace Scenes
         registry.emplace<VelocityComponent>(entity, Vector2{0, 0}, 0.0f);        // Initial velocity and rotation speed
         registry.emplace<ColliderComponent>(entity, 20.0f);                      // Collider radius
         registry.emplace<RenderComponent>(entity, BLACK, ShapeType::Square);     // Render color
-        registry.emplace<ParticleEmitterComponent>(entity, Vector2{0, 0}, Vector2{0, 10}, false, 0.8F, 5.0F, .8F);
+        auto &emitter = registry.emplace<ParticleEmitterComponent>(entity, Vector2{0, 0}, Vector2{0, 10}, false, 0.8F, 5.0F, .8F);
+        emitter.definition.spriteAlias = "particle_dust";
+        emitter.definition.type = ParticleType::Sprite;
         registry.emplace<PlayerComponent>(entity, true, 3);                          // Player is alive with 3 lives
         registry.emplace<InputComponent>(entity, false, false, false, false, false); // Initial input state
     }
@@ -112,6 +135,11 @@ namespace Scenes
     void MainScene::Load()
     {
 
+        // load the textures
+
+        auto &am = Core::App::GetInstance().GetAssetManager();
+        am.load("particle_dust", std::string(ASSETS_PATH) + "particles/dust_inverse.png");
+
         createAsteroid(registry, Vector2{200, 200}, Vector2{50, 50}, 30.0f);
         createAsteroid(registry, Vector2{600, 400}, Vector2{-50, -30}, 20.0f);
         createAsteroid(registry, Vector2{140, 100}, Vector2{-10, 30}, 20.0f);
@@ -142,11 +170,13 @@ namespace Scenes
         Texture2D bg = Core::App::GetInstance().GetAssetManager().getTexture("default_background");
         DrawTextureV(bg, {0, 0}, WHITE);
         beginCameraSystem(registry);
+        // this is a problem! I can't render particles AND the other things 
+        // and then expect all of them to be in the correct order!
+        renderParticleSystem(registry);
         renderSystem(registry);
 
         DrawRectangleLines(0, 0, config.Width, config.Height, BLACK);
         DrawRectangleLines(+5, +5, config.Width - 10, config.Height - 10, BLACK);
-        renderParticleSystem(registry);
         renderDebugPlayer(registry);
         endCameraSystem(registry);
         renderHUD(registry);
