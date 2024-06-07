@@ -31,6 +31,7 @@ namespace Core
         {
             m_sceneManager->UpdateCurrentScene(GetFrameTime());
             m_sceneManager->DrawCurrentScene();
+            m_assetManager->updateSound();
         }
         CloseWindow();
     }

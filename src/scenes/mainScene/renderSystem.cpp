@@ -1,4 +1,5 @@
 #include "entt/entt.hpp"
+#include "app.h"
 #include "raylib.h"
 #include "raymath.h"
 #include "components.h"
@@ -17,6 +18,17 @@ namespace Scenes
 
             switch (render.shape)
             {
+            case ShapeType::Sprite:
+            {
+                auto texture = Core::App::GetInstance().GetAssetManager().getTexture(render.spriteAlias);
+                DrawTexturePro(texture,
+                               {0, 0, (float)texture.width, (float)texture.height},
+                               {transform.position.x, transform.position.y, render.size, render.size},
+                               {render.size / 2, render.size / 2},
+                               transform.rotation + render.spriteRotation,
+                               render.color);
+                break;
+            }
             case ShapeType::Triangle:
             {
                 break;

@@ -1,6 +1,7 @@
 #include "entt/entt.hpp"
 #include "coremath.h"
 #include "raylib.h"
+#include "app.h"
 #include "raymath.h"
 #include "mainSceneSystems.h"
 #include "components.h"
@@ -27,17 +28,11 @@ namespace Scenes
                 velocity.velocity = Vector2{0, 0};
             }
 
-            // Apply input to player movement and rotation
-            auto *e = registry.try_get<ParticleEmitterComponent>(entity);
-            if (e != nullptr)
-            {
-                e->isActive = input.up;
-                e->direction = Vector2Backward(transform.getForward());
-            }
             if (input.up)
             {
-                velocity.velocity.x += transform.getForward().x * dt * 50;
-                velocity.velocity.y += transform.getForward().y * dt * 50;
+                velocity.velocity.x += transform.getForward().x * dt * 120;
+                velocity.velocity.y += transform.getForward().y * dt * 120;
+                Core::App::GetInstance().GetAssetManager().playSound("engine");
             }
             if (input.down) // it decelerates the CURRENT velocity vector, not facing direction
             {
@@ -52,6 +47,14 @@ namespace Scenes
             if (input.right)
             {
                 transform.rotation += 90 * dt;
+            }
+
+            // Apply input to player movement and rotation
+            auto *e = registry.try_get<ParticleEmitterComponent>(entity);
+            if (e != nullptr)
+            {
+                e->isActive = input.up;
+                e->direction = Vector2Backward(transform.getForward());
             }
             if (input.shoot)
             {

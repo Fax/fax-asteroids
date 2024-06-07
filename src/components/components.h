@@ -1,5 +1,6 @@
 #pragma once
-#include <raylib.h>
+#include <string>
+#include "raylib.h"
 
 struct ParticleComponent {
     Vector2 position;
@@ -48,6 +49,7 @@ enum class ShapeType {
     Triangle,
     Circle,
     Square,
+    Sprite,
     // Add more shapes as needed
 };
 
@@ -80,6 +82,8 @@ struct RenderComponent {
     Color color;
     ShapeType shape;
     float size = 10;
+    std::string spriteAlias;
+    float spriteRotation = 0;
 };
 
 struct PlayerComponent {

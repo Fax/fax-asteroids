@@ -1,14 +1,32 @@
 #include "entt/entt.hpp"
 #include "raylib.h"
 #include "raymath.h"
+#include "app.h"
 #include "components.h"
 #include "mainSceneSystems.h"
 #include <iostream>
 
 namespace Scenes
 {
-    void respawnPlayer(TransformComponent &playerTransform)
+    void respawnPlayer(TransformComponent &playerTransform, entt::registry &registry)
     {
+        auto emitterEntity = registry.create();
+        auto &emitterComponent = registry.emplace<ParticleEmitterComponent>(emitterEntity);
+        emitterComponent.position = Vector2{0, 0};
+        emitterComponent.direction = Vector2{0, 0};
+        emitterComponent.isActive = true;
+        emitterComponent.randomness = 1.0F;
+        emitterComponent.speed = 2.0F;
+        emitterComponent.lifetimeEmittedParticles = .6F;
+        emitterComponent.definition = ParticleDefinition{
+            ParticleType::Basic,
+            RED,
+            ""};
+
+        registry.emplace<TransformComponent>(emitterEntity, playerTransform.position, 0.0F);
+        registry.emplace<TimeoutComponent>(emitterEntity, 0.3f);
+        Core::App::GetInstance().GetAssetManager().playSound("explosion");
+
         // Implement respawn logic, e.g., set to a safe location
         playerTransform.position = Vector2{400, 300}; // Example respawn position
     }
@@ -27,15 +45,16 @@ namespace Scenes
         emitterComponent.randomness = 1.0F;
         emitterComponent.speed = 2.0F;
         emitterComponent.lifetimeEmittedParticles = .6F;
-        emitterComponent.definition = ParticleDefinition {
+        emitterComponent.definition = ParticleDefinition{
             ParticleType::Basic,
             WHITE,
-            ""
-        };
+            ""};
 
         registry.emplace<TransformComponent>(emitterEntity, asteroidTransform.position, 0.0F);
         registry.emplace<TimeoutComponent>(emitterEntity, 0.3f);
+
         registry.destroy(asteroid); // Example removal
+        Core::App::GetInstance().GetAssetManager().playSound("impact");
     }
 
     void updateScore()
@@ -67,7 +86,8 @@ namespace Scenes
                     player.isAlive = false;
                     std::cout << "Player boom" << std::endl;
                     // Handle player respawn logic
-                    respawnPlayer(playerTransform);
+
+                    respawnPlayer(playerTransform, registry);
                     // Handle asteroid splitting or removal
                     splitOrRemoveAsteroid(asteroid, registry);
                 }

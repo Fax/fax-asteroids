@@ -1,4 +1,5 @@
 #include "entt/entt.hpp"
+#include "app.h"
 #include "raylib.h"
 #include "raymath.h"
 #include "components.h"
@@ -44,6 +45,7 @@ namespace Scenes
                 Vector2 fw = transform.getForward();
                 float bulletSpeed = 200;
                 createBullet(registry, Vector2Add(transform.position, fw), Vector2Add(velocity.velocity, Vector2Multiply({bulletSpeed, bulletSpeed}, Vector2Normalize(fw))), BulletType::Circle);
+                Core::App::GetInstance().GetAssetManager().playSound("shoot",1);
             }
         }
     }

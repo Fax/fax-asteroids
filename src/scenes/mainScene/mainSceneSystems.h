@@ -1,5 +1,4 @@
 #include "entt/entt.hpp"
-
 namespace Scenes
 {
 
