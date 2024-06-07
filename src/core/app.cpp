@@ -19,6 +19,7 @@ namespace Core
     {
         // we create the window here.
         InitWindow(m_config.Width, m_config.Height, m_config.Title.c_str());
+        SetConfigFlags(FLAG_VSYNC_HINT|FLAG_WINDOW_RESIZABLE);
         m_assetManager->load("default_background", std::string(ASSETS_PATH) + "Flat Night 4 BG.png");
         // NOW load the scene. This will essentially run the Load method
         // if the scene needs to load assets, let it do it
