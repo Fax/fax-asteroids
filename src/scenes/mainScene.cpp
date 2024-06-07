@@ -30,7 +30,7 @@ namespace Scenes
                 // spawn point
                 Vector2 spawnPoint = Vector2Add(transform.position, emitter.position);
                 // the spawn point doesn't take in account the rotation of the transform
-                spawnPoint = RotateAroundPoint(spawnPoint, transform.position, transform.rotation + 90);
+                spawnPoint = RotateAroundPoint(spawnPoint, transform.position, transform.rotation);
 
                 Vector2 randomDirection = {
                     (emitter.direction.x + (GetRandomValue(-100, 100) / 100.0f) * emitter.randomness) * emitter.speed,
@@ -96,7 +96,7 @@ namespace Scenes
         registry.emplace<ColliderComponent>(entity, 20.0f);                                                   // Collider radius
         registry.emplace<RenderComponent>(entity, WHITE, ShapeType::Sprite, 50.0F, "sprite_mainship", 90.0f); // Render color
         auto &emitter = registry.emplace<ParticleEmitterComponent>(entity,
-                                                                   Vector2{0, 10},
+                                                                   Vector2{-10, 0},
                                                                    Vector2{0, 10},
                                                                    false,
                                                                    0.8F,
